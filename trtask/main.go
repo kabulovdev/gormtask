@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -47,8 +49,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&Adress{}, &Store{}, &Product{}, &Allinfo{})
-	db.Create(&Product{
+	tr := db.Begin()
+	tr.AutoMigrate(&Adress{}, &Store{}, &Product{}, &Allinfo{})
+	if err := tr.Create(&Product{
 
 		Name:     "model x7",
 		Category: "car",
@@ -80,6 +83,9 @@ func main() {
 				},
 			},
 		},
-	})
-
+	}).Error; err != nil {
+		tr.Rollback()
+		fmt.Println(err)
+	}
+	tr.Commit()
 }
